@@ -2,7 +2,6 @@ package ch.diethelm.backend.service;
 
 import ch.diethelm.backend.model.Game;
 import ch.diethelm.backend.repository.GameRepository;
-import org.assertj.core.api.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -115,7 +114,7 @@ class GameServiceTest {
                 .build();
 
         when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
-        when(gameRepository.save(updatedGame)).thenReturn(updatedGame);
+        when(gameRepository.save(game)).thenReturn(game);
 
         // Act
         Game result = gameService.updateGame(1L, updatedGame);
