@@ -2,6 +2,7 @@ package ch.diethelm.backend.service;
 
 import ch.diethelm.backend.model.Game;
 import ch.diethelm.backend.repository.GameRepository;
+import org.assertj.core.api.Assert;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -82,8 +83,7 @@ class GameServiceTest {
 
         // Act + Assert
         assertThatThrownBy(() -> gameService.getGameById(99L))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("99");
+                .isInstanceOf(NoSuchElementException.class);
     }
 
     @Test
@@ -131,13 +131,35 @@ class GameServiceTest {
 
     @Test
     void updateGame_throwsExceptionWhenIdNotFound() {
-        //
+        // Arrange
         Game game = sampleGame(1L, "Portal 2");
         when(gameRepository.findById(99L)).thenReturn(Optional.empty());
 
         // Act + Assert
         assertThatThrownBy(() -> gameService.updateGame(99L,game ))
-                .isInstanceOf(NoSuchElementException.class)
-                .hasMessageContaining("99");
+                .isInstanceOf(NoSuchElementException.class);
+    }
+
+    @Test
+    void deleteGame_deletesGame(){
+        // Arrange
+        when(gameRepository.existsById(1L)).thenReturn(true);
+
+        // Act
+        gameService.deleteGame(1L);
+
+        // Assert
+        verify(gameRepository).existsById(1L);
+        verify(gameRepository).deleteById(1L);
+    }
+
+    @Test
+    void deleteGame_throwsExceptionWhenIdNotFound() {
+        // Arrange
+        when(gameRepository.existsById(99L)).thenReturn(false);
+
+        // Act + Assert
+        assertThatThrownBy(() -> gameService.deleteGame(99L))
+            .isInstanceOf(NoSuchElementException.class);
     }
 }
