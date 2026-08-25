@@ -161,4 +161,16 @@ class GameServiceTest {
         assertThatThrownBy(() -> gameService.deleteGame(99L))
             .isInstanceOf(NoSuchElementException.class);
     }
+
+    @Test
+    void searchByTitle_delegatesTo_findByTitleContainingIgnoreCase(){
+        // Arrange
+        List<Game> games = List.of(sampleGame(1L, "Portal 2"));
+        when(gameRepository.findByTitleContainingIgnoreCase("portal")).thenReturn(games);
+
+        // Act
+        List<Game> result = gameService.searchByTitle("portal");
+
+        verify(gameRepository).findByTitleContainingIgnoreCase("portal");
+    }
 }
