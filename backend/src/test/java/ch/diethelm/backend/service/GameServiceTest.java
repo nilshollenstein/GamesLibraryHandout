@@ -101,4 +101,43 @@ class GameServiceTest {
         assertThat(result.getId()).isEqualTo(1L);
         verify(gameRepository).save(newGame);
     }
+
+    @Test
+    void updateGame_OverwritesAllFields(){
+        // Arrange
+        Game game = sampleGame(1L, "Portal 2");
+        Game updatedGame = Game.builder()
+                .id(1L)
+                .title("Half-Life")
+                .releaseDate(LocalDate.of(2008, 1, 15))
+                .description("Neue Beschreibung")
+                .imageUrl("https://google.com/image.jpg")
+                .build();
+
+        when(gameRepository.findById(1L)).thenReturn(Optional.of(game));
+        when(gameRepository.save(updatedGame)).thenReturn(updatedGame);
+
+        // Act
+        Game result = gameService.updateGame(1L, updatedGame);
+
+        // Assert
+        assertThat(result.getId()).isEqualTo(1L);
+        assertThat(result.getTitle()).isEqualTo("Half-Life");
+        assertThat(result.getReleaseDate()).isEqualTo(LocalDate.of(2008, 1, 15));
+        assertThat(result.getDescription()).isEqualTo("Neue Beschreibung");
+        assertThat(result.getImageUrl()).isEqualTo("https://google.com/image.jpg");
+        verify(gameRepository).save(game);
+    }
+
+    @Test
+    void updateGame_throwsExceptionWhenIdNotFound() {
+        //
+        Game game = sampleGame(1L, "Portal 2");
+        when(gameRepository.findById(99L)).thenReturn(Optional.empty());
+
+        // Act + Assert
+        assertThatThrownBy(() -> gameService.updateGame(99L,game ))
+                .isInstanceOf(NoSuchElementException.class)
+                .hasMessageContaining("99");
+    }
 }
