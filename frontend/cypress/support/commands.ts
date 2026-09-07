@@ -3,6 +3,8 @@
 // GamesLibrary E2E-Tests.
 // ***********************************************************
 
+import type { Interception } from 'cypress/types/net-stubbing';
+
 /**
  * Öffnet die Anwendung und wartet, bis der initiale
  * GET /api/games-Aufruf abgeschlossen ist (Spiele geladen).
@@ -50,6 +52,33 @@ Cypress.Commands.add('fillGameForm', (game: {
 });
 
 /**
+ * Führt eine Suche durch, gibt es den Respone so zurück, dass der HTTP-Code geprüft werden kann.
+ */
+Cypress.Commands.add('searchFor', (term: string) => {
+  cy.intercept('GET', '/api/games/search*').as('searchRequest');
+  cy.get('.search-bar__input').clear();
+  cy.get('.search-bar__input').type(term, { delay: 0 });
+  cy.get('.search-bar__button').click();
+  return cy.wait('@searchRequest');
+});
+
+/**
+ * Legt ein neues Spiel an
+ */
+Cypress.Commands.add('createGameViaForm', (game: {
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+  releaseDate?: string;
+}) => {
+  cy.openAddGameForm();
+  cy.fillGameForm(game);
+  cy.intercept('POST', '/api/games').as('createGameRequest');
+  cy.get('.game-form__btn--submit').click();
+  cy.wait('@createGameRequest');
+});
+
+/**
  * Löscht ein Spiel anhand seines Titels direkt über die API.
  * Wird für die Aufräumarbeiten nach Tests verwendet, damit die
  * Datenbank zwischen Testläufen sauber bleibt.
@@ -78,6 +107,13 @@ declare global {
         releaseDate?: string;
       }): Chainable<void>;
       deleteGameByTitle(title: string): Chainable<void>;
+      searchFor(term: string): Chainable<Interception>;
+      createGameViaForm(game: {
+        title?: string;
+        description?: string;
+        imageUrl?: string;
+        releaseDate?: string;
+      }): Chainable<void>;
     }
   }
 }
