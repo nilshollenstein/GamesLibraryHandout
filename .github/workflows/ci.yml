@@ -8,27 +8,42 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
-    defaults:
-      run:
-        working-directory: frontend
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
 
       - name: Install dependencies
+        working-directory: frontend
         run: npm install
+
+      - name: Build app
+        working-directory: frontend
+        run: npm run build
+        env:
+          CI: "false"
+
+      - name: Pack workspace as artifact
+        run: tar -czf frontend-workspace.tar.gz frontend
+
+      - name: Upload artifacts (node_modules and build)
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-workspace
+          path: frontend-workspace.tar.gz
+          retention-days: 1
 
   tests:
     runs-on: ubuntu-22.04
     needs: build # Test-Job wartet, bis der Build-Job erfolgreich ist
-    defaults:
-      run:
-        working-directory: frontend
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-workspace
 
-      - name: Install dependencies and run Test
-        run: |
-          npm install
-          npm test
+      - name: Unpack workspace
+        run: tar -xzf frontend-workspace.tar.gz
+
+      - name: Run tests
+        working-directory: frontend
+        run: npm test
