@@ -2,8 +2,8 @@ import React from 'react';
 import { render, screen } from '@testing-library/react';
 import App from './App';
 
-test('renders incorrect heading', () => {
+test('renders the correct heading', () => {
   render(<App />);
-  const heading = screen.getByText('Wrong Heading');
+  const heading = screen.getByText('Games Library');
   expect(heading).toBeInTheDocument();
 });
